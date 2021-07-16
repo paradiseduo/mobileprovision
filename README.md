@@ -19,15 +19,16 @@ and output info like this:
 ```bash
 xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.mobileprovision
 {
-    "application-identifier": "xxxxxxxxxx.com.xxxx.xxxxx.xxxxx",
-    "com.apple.developer.team-identifier": "xxxxxxxxxx",
-    "com.apple.security.application-groups": [
-        "group.com.xxxx.xxxxx"
+    "ApplicationIdentifierPrefix": [
+        "xxxxxxxxxx"
     ],
-    "get-task-allow": true,
-    "keychain-access-groups": [
-        "xxxxxxxxxx.*",
-        "com.apple.token"
-    ]
+    "Cert_CN": "Apple Development: paradiseduo (ABCDEFGHIJ)",
+    "Cert_OU": "ABCDEFGHIJ",
+    "Cert_UID": "ABCDEFGHIJ",
+    "Name": "match Development com.paradiseduo.python",
+    "TeamIdentifier": [
+        "ABCDEFGHIJ"
+    ],
+    "TeamName": "paradiseduo"
 }
 ```
