@@ -5,7 +5,6 @@ import subprocess
 import getopt
 import plistlib
 import json
-import base64
 
 tasks = []
 
@@ -66,14 +65,14 @@ def main(argv):
     
     files= os.listdir(inputfile)
     for file in files:
-        if not os.path.isdir(file):
+        if (".mobileprovision" in file) and (not os.path.isdir(file)):
             plistName = os.path.abspath(file.replace('mobileprovision', 'plist'))
-            cmd = "security cms -D -i " + str(inputfile.replace(' ', '\ ')) + file + " > " + plistName
+            cmd = "security cms -D -i " + str(inputfile.replace(' ', '\ ')) + "/" + file + " > " + plistName
             RunCMD(cmd).run_cmd()
             
-            cmd = "security cms -D -i " + str(inputfile.replace(' ', '\ ')) + file
+            cmd = "security cms -D -i " + str(inputfile.replace(' ', '\ ')) + "/" + file
             out = RunCMD(cmd).run_cmd()[0]
-            
+ 
             start = str(out).find('<data>')+6
             end = str(out).find('</data>')
             cacheName = os.path.abspath(file.replace('mobileprovision', 'txt'))
