@@ -58,31 +58,36 @@ def main(argv):
             sys.exit()
         elif opt in ("-i", "--ipath"):
             inputfile = arg
-    
+
+    if len(inputfile) == 0:
+        printUse()
+        sys.exit(0)
     runner = RunCMD("ideviceinfo -s | grep UniqueDeviceID")
-    result = str(runner.run_cmd()[0])
+    result = str(runner.run_cmd()[0].decode('utf-8'))
+    if len(result) == 0:
+        print("No Device Connect")
+        sys.exit(0)
     deviceId = result.split(':')[1].strip()[:-3]
-    
     files= os.listdir(inputfile)
     for file in files:
         if (".mobileprovision" in file) and (not os.path.isdir(file)):
             plistName = os.path.abspath(file.replace('mobileprovision', 'plist'))
             cmd = "security cms -D -i " + str(inputfile.replace(' ', '\ ')) + "/" + file + " > " + plistName
             RunCMD(cmd).run_cmd()
-            
+
             cmd = "security cms -D -i " + str(inputfile.replace(' ', '\ ')) + "/" + file
-            out = RunCMD(cmd).run_cmd()[0]
- 
+            out = RunCMD(cmd).run_cmd()[0].decode('utf-8')
+
             start = str(out).find('<data>')+6
             end = str(out).find('</data>')
             cacheName = os.path.abspath(file.replace('mobileprovision', 'txt'))
             cmd = "echo '-----BEGIN CERTIFICATE-----\n" + str(out)[start:end] + "\n-----END CERTIFICATE-----' > " + cacheName
             RunCMD(cmd).run_cmd()
-            
+
             cerName = os.path.abspath(file.replace('mobileprovision', 'cer'))
             cmd = "fold -w 64 " + cacheName + " > " + cerName
             RunCMD(cmd).run_cmd()
-            
+
             cmd = "openssl x509 -inform pem -noout -text -in " + cerName
             outs = RunCMD(cmd).run_cmd()[0].decode('utf-8', 'ignore').split('\n')
             for line in outs:
@@ -95,18 +100,19 @@ def main(argv):
             with open(plistName, 'rb') as f:
                 pl = plistlib.load(f)
                 try:
-                    if deviceId in pl['ProvisionedDevices']:
-                        dir = {
-                            'Name':pl['Name'],
-                            'ApplicationIdentifierPrefix':pl['ApplicationIdentifierPrefix'],
-                            'TeamIdentifier':pl['TeamIdentifier'],
-                            'TeamName':pl['TeamName'],
-                            'Cert_UID': UID,
-                            'Cert_CN': CN,
-                            'Cert_OU': OU
-                            }
-                        j = json.dumps(dir, sort_keys=True, indent=4, separators=(',', ': '))
-                        print(file + '\n' + j + '\n')
+                    for item in pl['ProvisionedDevices']:
+                        if deviceId in item:
+                            dir = {
+                                'Name': pl['Name'],
+                                'ApplicationIdentifierPrefix': pl['ApplicationIdentifierPrefix'],
+                                'TeamIdentifier': pl['TeamIdentifier'],
+                                'TeamName': pl['TeamName'],
+                                'Cert_UID': UID,
+                                'Cert_CN': CN,
+                                'Cert_OU': OU
+                                }
+                            j = json.dumps(dir, sort_keys=True, indent=4, separators=(',', ': '))
+                            print(file + '\n' + j + '\n')
                     os.remove(plistName)
                     os.remove(cacheName)
                     os.remove(cerName)
